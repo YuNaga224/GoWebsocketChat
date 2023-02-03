@@ -4,9 +4,12 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"text/template"
+
+	"github.com/YuNaga224/websocketChat/websocketChat/trace"
 )
 
 // templateHandler型を宣言
@@ -34,6 +37,7 @@ func main() {
 	flag.Parse()
 	//ROOMの新規作成
 	r := newRoom()
+	r.tracer = trace.New(os.Stdout)
 	//ルート
 	http.Handle("/", &templateHandler{filename: "chat.html"})
 	http.Handle("/room", r)
