@@ -18,12 +18,12 @@ type room struct {
 	clients map[*client]bool
 }
 
-//新規ルームの生成を行う関数
+// 新規ルームの生成を行う関数
 func newRoom() *room {
 	return &room{
 		forward: make(chan []byte),
-		join: make(chan *client),
-		leave: make(chan *client),
+		join:    make(chan *client),
+		leave:   make(chan *client),
 		clients: make(map[*client]bool),
 	}
 }
@@ -60,6 +60,7 @@ const (
 	messageBufferSize = 256
 )
 
+// WebSocketを使用するためにHTTP接続をアップグレード
 var upgrader = &websocket.Upgrader{ReadBufferSize: socketBufferSize, WriteBufferSize: socketBufferSize}
 
 func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -74,7 +75,9 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		room:   r,
 	}
 	r.join <- client
+	//webページが閉じられた際にクライアントを削除
 	defer func() { r.leave <- client }()
+	// メッセージの送信処理を別のgoroutineで実行
 	go client.write()
 	client.read()
 }
