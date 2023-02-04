@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/objx"
 )
 
+// config.jsonから受け取ったクライアントID,クライアントシークレットを格納する構造体
 type GoogleOAuth struct {
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
