@@ -36,8 +36,11 @@
 <body>
     <h1>WebSocketを使用したチャットアプリケーションです！</h1>
     <h2>Go言語で書かれています</h2>
+
+    <!-- messagesのリスト要素にメッセージが追加されていく -->
     <ul id="messages"></ul>
     <form id="chatbox">
+        {{.UserData.name}}:<br/>
         <textarea cols="100" rows="1"></textarea>
         <input type="submit" value="送信">
     </form>
