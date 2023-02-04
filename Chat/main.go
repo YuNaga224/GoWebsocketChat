@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +13,27 @@ import (
 	"text/template"
 
 	"github.com/YuNaga224/websocketChat/websocketChat/trace"
+	"github.com/stretchr/gomniauth"
+	"github.com/stretchr/gomniauth/providers/facebook"
+	"github.com/stretchr/gomniauth/providers/github"
+	"github.com/stretchr/gomniauth/providers/google"
+	"github.com/stretchr/objx"
 )
+
+type GoogleOAuth struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}
+
+type GitHubOAuth struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}
+
+type OAuthProvider struct {
+	Google GoogleOAuth `json:"google"`
+	GitHub GitHubOAuth `json:"github"`
+}
 
 // templateHandler型を宣言
 type templateHandler struct {
@@ -26,20 +49,49 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//テンプレートをコンパイル
 		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
 	})
+	data := map[string]interface{}{
+		"Host": r.Host,
+	}
 
-	t.templ.Execute(w, r)
+	if authCookie, err := r.Cookie("auth"); err == nil {
+		data["UserData"] = objx.MustFromBase64(authCookie.Value)
+	}
+
+	t.templ.Execute(w, data)
 
 }
 
 func main() {
+	//config.jsonから設定情報読み込み
+	configBytes, err := ioutil.ReadFile("../config.json")
+	if err != nil {
+		fmt.Println("config.jsonファイルの読み込みでエラーが発生しました", err)
+	}
+
+	var oauthProvider OAuthProvider
+
+	err = json.Unmarshal(configBytes, &oauthProvider)
+	if err != nil {
+		fmt.Println("configファイルの解析でエラーが発生しました", err)
+	}
 
 	var addres = flag.String("addr", ":8080", "アプリケーションのアドレス")
 	flag.Parse()
+
+	//Gomniauthセットアップ
+	gomniauth.SetSecurityKey("デジタル署名となるランダムな値")
+	gomniauth.WithProviders(
+		facebook.New("クライアントID", "秘密の値", "http://localohost:8080/auth/callback/facebook"),
+		github.New(oauthProvider.GitHub.ClientID, oauthProvider.GitHub.ClientSecret, "http://localhost:8080/auth/callback/github"),
+		google.New(oauthProvider.Google.ClientID, oauthProvider.Google.ClientSecret, "http://localhost:8080/auth/callback/google"),
+	)
 	//ROOMの新規作成
 	r := newRoom()
 	r.tracer = trace.New(os.Stdout)
 	//ルート
-	http.Handle("/", &templateHandler{filename: "chat.html"})
+	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
+	http.Handle("/login", &templateHandler{filename: "login.html"})
+	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/room", r)
 	//チャットルームの開始
 	go r.run()
