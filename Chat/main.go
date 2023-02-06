@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/objx"
 )
 
+// config.jsonから受け取ったクライアントID,クライアントシークレットを格納する構造体
 type GoogleOAuth struct {
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
@@ -92,6 +93,7 @@ func main() {
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
+	http.HandleFunc("/logout", logoutHandler)
 	http.Handle("/room", r)
 	//チャットルームの開始
 	go r.run()
@@ -101,3 +103,4 @@ func main() {
 		log.Fatal("ListenAndServe:", err)
 	}
 }
+

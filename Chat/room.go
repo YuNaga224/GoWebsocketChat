@@ -6,11 +6,12 @@ import (
 
 	"github.com/YuNaga224/websocketChat/websocketChat/trace"
 	"github.com/gorilla/websocket"
+	"github.com/stretchr/objx"
 )
 
 type room struct {
 	//forwardは他のクライアントに送信するメッセージを保持するチャネル
-	forward chan []byte
+	forward chan *message
 	//チャットルームに参加しようとするクライアントのためのチャネル
 	join chan *client
 	//チャットルームを退室するクライアントのためのチャネル
@@ -24,7 +25,7 @@ type room struct {
 // 新規ルームの生成を行う関数
 func newRoom() *room {
 	return &room{
-		forward: make(chan []byte),
+		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
@@ -45,7 +46,7 @@ func (r *room) run() {
 			close(client.send)
 			r.tracer.Trace("クライアントが退室")
 		case msg := <-r.forward:
-			r.tracer.Trace("メッセージを受信")
+			r.tracer.Trace("メッセージを受信", msg.Message)
 			//参加中のすべてのクライアントにメッセージを送信
 			for client := range r.clients {
 				select {
@@ -78,10 +79,17 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Fatal("ServeHTTP:", err)
 		return
 	}
+
+	authCookie, err := req.Cookie("auth")
+	if err != nil {
+		log.Fatal("クッキーの取得に失敗しました", err)
+		return
+	}
 	client := &client{
-		socket: socket,
-		send:   make(chan []byte, messageBufferSize),
-		room:   r,
+		socket:   socket,
+		send:     make(chan *message, messageBufferSize),
+		room:     r,
+		userData: objx.MustFromBase64(authCookie.Value),
 	}
 	r.join <- client
 	//webページが閉じられた際にクライアントを削除
