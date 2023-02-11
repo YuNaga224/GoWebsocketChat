@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/YuNaga224/websocketChat/websocketChat/trace"
+	"github.com/YuNaga224/websocketChat/trace"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/objx"
 )

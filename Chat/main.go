@@ -12,7 +12,7 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/YuNaga224/websocketChat/websocketChat/trace"
+	"github.com/YuNaga224/websocketChat/trace"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/gomniauth/providers/github"
@@ -103,4 +103,3 @@ func main() {
 		log.Fatal("ListenAndServe:", err)
 	}
 }
-

@@ -15,7 +15,7 @@ type authHandler struct {
 }
 
 func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if cookie, err := r.Cookie("auth"); err == http.ErrNoCookie || cookie.Value == ""{
+	if cookie, err := r.Cookie("auth"); err == http.ErrNoCookie || cookie.Value == "" {
 		//認証されていないのでloginページにリダイレクトする
 		w.Header().Set("Location", "/login")
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -94,15 +94,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
-		Name: "auth",
-		Value: "",
-		Path: "/",
+		Name:   "auth",
+		Value:  "",
+		Path:   "/",
 		MaxAge: -1,
 	})
 	w.Header()["Location"] = []string{"/chat"}
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
-
-
-
-
