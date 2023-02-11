@@ -9,12 +9,30 @@ Go言語で実装しています。「Go言語によるWebアプリケーショ�
 ```
 git clone https://github.com/YuNaga224/GoWebsocketChat.git
 
+go mod tidy
+
+```
+次にルートディレクトリにconfig.jsonを以下のような形式で作成してください。
+```
+{
+    "google":{
+        "client_id":"クライアントID",
+        "client_secret":"クライアントシークレット"
+    },
+    "github":{
+        "client_id":"クライアントID",
+        "client_secret":"クライアントシークレット"
+    }
+}
+```
+その後コマンドラインで以下を実行するとサーバーが立ち上がります
+```
 go build -o chat
 
 ./chat
 ```
 
-その後、localhost:8080にアクセスすると使えます。
+localhost:8080にアクセスすると使えます。
 実際に複数のブラウザを立ち上げてチャットしてみてください。
 ctrl + Cで終了できます。
 
