@@ -20,16 +20,19 @@ type room struct {
 	clients map[*client]bool
 	//チャットルームの操作ログを受け取る
 	tracer trace.Tracer
+	//avatarはアバター情報を取得する
+	avatar Avatar
 }
 
 // 新規ルームの生成を行う関数
-func newRoom() *room {
+func newRoom(avatar Avatar) *room {
 	return &room{
 		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
 		tracer:  trace.Off(),
+		avatar:  avatar,
 	}
 }
 

@@ -87,14 +87,18 @@ func main() {
 		google.New(oauthProvider.Google.ClientID, oauthProvider.Google.ClientSecret, "http://localhost:8080/auth/callback/google"),
 	)
 	//ROOMの新規作成
-	r := newRoom()
+	r := newRoom(UseGravatar)
 	r.tracer = trace.New(os.Stdout)
 	//ルート
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
+	http.HandleFunc("/uploader", uploaderHandler)
 	http.Handle("/room", r)
+	http.Handle("/upload", &templateHandler{filename: "upload.html"})
+	//ファイルサーバを書くユーザのブラウザに提供
+	http.Handle("/avatars/",http.StripPrefix("/avatars/",http.FileServer(http.Dir("./avatars"))))
 	//チャットルームの開始
 	go r.run()
 	//webサーバーの開始
