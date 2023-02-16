@@ -20,6 +20,8 @@ type room struct {
 	clients map[*client]bool
 	//チャットルームの操作ログを受け取る
 	tracer trace.Tracer
+	//avatarはアバター情報を取得する
+	avatar Avatar
 }
 
 // 新規ルームの生成を行う関数
@@ -53,6 +55,7 @@ func (r *room) run() {
 				case client.send <- msg:
 					//メッセージを送信
 					r.tracer.Trace("メッセージを送信")
+					r.tracer.Trace("アバターパス", msg.AvatarURL)
 				default:
 					//送信に失敗
 					delete(r.clients, client)

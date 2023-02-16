@@ -20,6 +20,9 @@ import (
 	"github.com/stretchr/objx"
 )
 
+// 現在アクティブなavatarの実装
+var avatars Avatar = UseFileSystemAvatar
+
 // config.jsonから受け取ったクライアントID,クライアントシークレットを格納する構造体
 type GoogleOAuth struct {
 	ClientID     string `json:"client_id"`
@@ -94,7 +97,11 @@ func main() {
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
+	http.HandleFunc("/uploader", uploaderHandler)
 	http.Handle("/room", r)
+	http.Handle("/upload", &templateHandler{filename: "upload.html"})
+	//ファイルサーバを書くユーザのブラウザに提供
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
 	//チャットルームの開始
 	go r.run()
 	//webサーバーの開始

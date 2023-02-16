@@ -26,11 +26,11 @@ func New(w io.Writer) Tracer {
 
 }
 
-type nilTracer struct {}
+type nilTracer struct{}
 
-func (t *nilTracer) Trace(a ...interface{}){}
-//OffはTraceメソッドの呼び出しを無視するTracerを返す
+func (t *nilTracer) Trace(a ...interface{}) {}
+
+// OffはTraceメソッドの呼び出しを無視するTracerを返す
 func Off() Tracer {
 	return &nilTracer{}
 }
-
