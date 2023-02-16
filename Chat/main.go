@@ -20,6 +20,9 @@ import (
 	"github.com/stretchr/objx"
 )
 
+// 現在アクティブなavatarの実装
+var avatars Avatar = UseFileSystemAvatar
+
 // config.jsonから受け取ったクライアントID,クライアントシークレットを格納する構造体
 type GoogleOAuth struct {
 	ClientID     string `json:"client_id"`
@@ -87,7 +90,7 @@ func main() {
 		google.New(oauthProvider.Google.ClientID, oauthProvider.Google.ClientSecret, "http://localhost:8080/auth/callback/google"),
 	)
 	//ROOMの新規作成
-	r := newRoom(UseGravatar)
+	r := newRoom()
 	r.tracer = trace.New(os.Stdout)
 	//ルート
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
@@ -98,7 +101,7 @@ func main() {
 	http.Handle("/room", r)
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	//ファイルサーバを書くユーザのブラウザに提供
-	http.Handle("/avatars/",http.StripPrefix("/avatars/",http.FileServer(http.Dir("./avatars"))))
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
 	//チャットルームの開始
 	go r.run()
 	//webサーバーの開始

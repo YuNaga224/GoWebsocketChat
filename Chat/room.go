@@ -25,14 +25,13 @@ type room struct {
 }
 
 // 新規ルームの生成を行う関数
-func newRoom(avatar Avatar) *room {
+func newRoom() *room {
 	return &room{
 		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
 		tracer:  trace.Off(),
-		avatar:  avatar,
 	}
 }
 
@@ -56,6 +55,7 @@ func (r *room) run() {
 				case client.send <- msg:
 					//メッセージを送信
 					r.tracer.Trace("メッセージを送信")
+					r.tracer.Trace("アバターパス", msg.AvatarURL)
 				default:
 					//送信に失敗
 					delete(r.clients, client)
